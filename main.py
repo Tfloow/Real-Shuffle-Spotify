@@ -10,11 +10,12 @@ currentTime = datetime.now()
 currentTime = currentTime.strftime("%H:%M:%S")
 
 # token authentication API
-cid = 'clientId'
-secret = 'secretId'
+cid = ''
+secret = ''
 
 # access demand and limitation
-scope = 'playlist-modify-private,playlist-read-private,playlist-modify-public,user-read-currently-playing,user-modify-playback-state'
+scope = 'playlist-modify-private,playlist-read-private,playlist-modify-public,' \
+        'user-read-currently-playing,user-modify-playback-state,user-read-recently-played'
 limitQ = 50
 
 # query to spotify API and get userId
@@ -60,6 +61,7 @@ possible = False
 # create a playlist named RSS test and doesn't if it already on available
 author = None
 rssPlaylistId = None
+multipleRSS = False
 
 
 def rssPlaylistCheck():
@@ -72,6 +74,9 @@ def rssPlaylistCheck():
         # pp.pprint("{pl} by {au}".format(pl=name, au=author))
         namePlaylist.append(name)
         if name.upper()[:3] == "RSS" and authorId == userId:
+            print(name.upper()[:7] == "RSS RSS")
+            if name.upper()[:7] == "RSS RSS":
+                multipleRSS = True
             print("found a playlist compatible")
             rssPlaylistId = playlist["items"][f]["id"]
             possible = True
@@ -87,7 +92,14 @@ if not possible:
 
 print(rssPlaylistId)
 
-# checking and storing if a playlist have changed NEED TO HANDLE IF THE FILE IS INEXISTANT
+#get recently played track
+recentlyTrack = []
+
+for f in range(50):
+    recentlyTrack.append(sp.current_user_recently_played()["items"][f]["track"]["id"])
+
+
+# checking and storing if a playlist have changed NEED TO HANDLE IF SOMEONE RSS THE SAME BUT DON'T WANT THE SAME TRACK
 snapshotId = sp.playlist(actualPlaylistId)["snapshot_id"]
 
 # handle if not existent
@@ -122,6 +134,13 @@ if snapshotId != prevSnap:
             trackIdOrder.append(trackid)
         tl.write(str(trackIdOrder))
     print("whole tracklist saved")
+    enum = len(trackIdOrder)
+    for recentlyEach in recentlyTrack:
+        if recentlyEach in trackIdOrder:
+            trackIdOrder.remove(recentlyEach)
+    print(enum)
+    enum = len(trackIdOrder)
+    print(enum)
     newOrder = random.sample(trackIdOrder, enum)  # shuffled songs
     print("Playlist Shuffled")
 else:
@@ -136,11 +155,23 @@ else:
         trackIdOrder = new
         print("whole tracklist saved")
         enum = len(trackIdOrder)
+        for recentlyEach in recentlyTrack:
+            if recentlyEach in trackIdOrder:
+                trackIdOrder.remove(recentlyEach)
+        print(enum)
+        enum = len(trackIdOrder)
+        print(enum)
+
         newOrder = random.sample(trackIdOrder, enum)  # shuffled songs
         print("Playlist Shuffled")
 
 # adding songs in the RSS playlist
 playlistTag = rssPlaylistId
+if multipleRSS == True:
+    rssName = f"{actualPlaylistName}"
+else:
+    rssName = f"RSS {actualPlaylistName}"
+    print(rssName)
 sp.playlist_change_details(playlistTag, description=f"generated at {currentTime} UTC+1 from {actualPlaylistName}",
-                           name=f"RSS {actualPlaylistName}")  # add responsive timezone
+                           name=rssName)  # add responsive timezone
 sp.playlist_replace_items(playlistTag, newOrder[:100])
