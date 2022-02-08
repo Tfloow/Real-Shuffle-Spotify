@@ -94,9 +94,10 @@ print(rssPlaylistId)
 
 #get recently played track
 recentlyTrack = []
+recently = sp.current_user_recently_played()["items"]
 
 for f in range(50):
-    recentlyTrack.append(sp.current_user_recently_played()["items"][f]["track"]["id"])
+    recentlyTrack.append(recently[f]["track"]["id"])
 
 
 # checking and storing if a playlist have changed NEED TO HANDLE IF SOMEONE RSS THE SAME BUT DON'T WANT THE SAME TRACK
