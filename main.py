@@ -130,7 +130,7 @@ if snapshotId != prevSnap:
                 offset = enum
                 tracklist = sp.playlist_tracks(actualPlaylistId, offset=offset)
                 x += 1
-            tracklistAccess = tracklist["items"]  # Spport des PODCASTS !!!
+            tracklistAccess = tracklist["items"]  # Support des PODCASTS !!!
             trackid = tracklistAccess[enum - offset]["track"]["id"]
             trackIdOrder.append(trackid)
         tl.write(str(trackIdOrder))
@@ -173,6 +173,6 @@ if multipleRSS == True:
 else:
     rssName = f"RSS {actualPlaylistName}"
     print(rssName)
-sp.playlist_change_details(playlistTag, description=f"generated at {currentTime} UTC+1 from {actualPlaylistName}",
+sp.playlist_change_details(playlistTag, description=f"Automatically generated at {currentTime} UTC+1 from {actualPlaylistName}",
                            name=rssName)  # add responsive timezone
 sp.playlist_replace_items(playlistTag, newOrder[:100])
